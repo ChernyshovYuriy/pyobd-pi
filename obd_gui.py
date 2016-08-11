@@ -35,29 +35,29 @@ class OBDConnection(object):
 
     def __init__(self):
         print("Class " + type(self).__name__)
-        self.c = OBD_Capture()
+        self.obd_capture = OBD_Capture()
 
     def get_capture(self):
-        return self.c
+        return self.obd_capture
 
     def connect(self):
-        self.t = Thread(target=obd_connect, args=(self.c,))
-        self.t.start()
+        self.thread = Thread(target=obd_connect, args=(self.obd_capture,))
+        self.thread.start()
 
     def is_connected(self):
-        return self.c.is_connected()
+        return self.obd_capture.is_connected()
 
     def get_output(self):
-        if self.c and self.c.is_connected():
-            return self.c.capture_data()
+        if self.obd_capture and self.obd_capture.is_connected():
+            return self.obd_capture.capture_data()
         return ""
 
     def get_port(self):
-        return self.c.is_connected()
+        return self.obd_capture.is_connected()
 
     def get_port_name(self):
-        if self.c:
-            port = self.c.is_connected()
+        if self.obd_capture:
+            port = self.obd_capture.is_connected()
             if port:
                 try:
                     return port.port.name
@@ -67,8 +67,8 @@ class OBDConnection(object):
 
     def get_sensors(self):
         sensors = []
-        if self.c:
-            sensors = self.c.getSupportedSensorList()
+        if self.obd_capture:
+            sensors = self.obd_capture.getSupportedSensorList()
         return sensors
 
 
