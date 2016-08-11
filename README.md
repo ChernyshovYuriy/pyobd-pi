@@ -90,3 +90,7 @@ The logged data file will be saved under:
 /home/username/pyobd-pi/log/
 
 Enjoy and drive safe!</pre>
+
+Additional links for Python3:
+http://stackoverflow.com/questions/27240143/installing-wxpython-on-ubuntu-14-04
+python3-serial

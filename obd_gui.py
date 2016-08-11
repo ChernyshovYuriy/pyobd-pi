@@ -496,7 +496,7 @@ class OBDFrame0(wx.Frame):
         # -------------------------------------------------------------------------------
 
 
-class OBDSplashScreen(wx.SplashScreen):
+class OBDSplashScreen():
     """
     Splash screen.
     """
