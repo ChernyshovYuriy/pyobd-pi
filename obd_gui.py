@@ -5,33 +5,33 @@
 # Created by Paul Bartek (pbartek@cowfishstudios.com)
 #
 ###########################################################################
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
-import os
-import wx
 import time
 from threading import Thread
 
-from obd_capture import OBD_Capture
-from obd_sensors import SENSORS
-from obd_sensors import *
+import wx
 
-#-------------------------------------------------------------------------------
+from obd_capture import OBD_Capture
+
+# -------------------------------------------------------------------------------
 
 # OBD variables
 BACKGROUND_FILENAME = "bg_black.jpg"
-LOGO_FILENAME 		= "cowfish.png"
+LOGO_FILENAME = "cowfish.png"
 
-#-------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------
 
 def obd_connect(o):
     o.connect()
+
 
 class OBDConnection(object):
     """
     Class for OBD connection. Use a thread for connection.
     """
-    
+
     def __init__(self):
         self.c = OBD_Capture()
 
@@ -62,14 +62,15 @@ class OBDConnection(object):
                 except:
                     pass
         return None
-    
+
     def get_sensors(self):
         sensors = []
         if self.c:
             sensors = self.c.getSupportedSensorList()
         return sensors
 
-#-------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------
 
 class OBDText(wx.TextCtrl):
     """
@@ -84,7 +85,7 @@ class OBDText(wx.TextCtrl):
         wx.TextCtrl.__init__(self, parent, style=style)
 
         self.SetBackgroundColour('#21211f')
-        self.SetForegroundColour(wx.WHITE)  
+        self.SetForegroundColour(wx.WHITE)
 
         font = wx.Font(12, wx.ROMAN, wx.NORMAL, wx.NORMAL, faceName="Monaco")
         self.SetFont(font)
@@ -92,7 +93,8 @@ class OBDText(wx.TextCtrl):
     def AddText(self, text):
         self.AppendText(text)
 
-#-------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------
 
 class OBDStaticBox(wx.StaticBox):
     """
@@ -105,19 +107,20 @@ class OBDStaticBox(wx.StaticBox):
         """
         wx.StaticBox.__init__(self, *args, **kwargs)
 
-    def OnPaint(self, event): 
-        self.Paint(wx.PaintDC(self)) 
+    def OnPaint(self, event):
+        self.Paint(wx.PaintDC(self))
 
-    def Paint(self, dc): 
-        dc.DrawBitmap(self.bitmap, 0, 0)     
+    def Paint(self, dc):
+        dc.DrawBitmap(self.bitmap, 0, 0)
 
-#-------------------------------------------------------------------------------
+        # -------------------------------------------------------------------------------
+
 
 class OBDPanelGauges(wx.Panel):
     """
     Panel for gauges.
     """
-    
+
     def __init__(self, *args, **kwargs):
         """
         Constructor.
@@ -125,10 +128,10 @@ class OBDPanelGauges(wx.Panel):
         super(OBDPanelGauges, self).__init__(*args, **kwargs)
 
         # Background image
-        image = wx.Image(BACKGROUND_FILENAME) 
-        width, height = wx.GetDisplaySize() 
+        image = wx.Image(BACKGROUND_FILENAME)
+        width, height = wx.GetDisplaySize()
         image = image.Scale(width, height, wx.IMAGE_QUALITY_HIGH)
-        self.bitmap = wx.BitmapFromImage(image) 
+        self.bitmap = wx.BitmapFromImage(image)
         self.Bind(wx.EVT_PAINT, self.OnPaint)
 
         # Create an accelerator table
@@ -138,24 +141,24 @@ class OBDPanelGauges(wx.Panel):
         self.Bind(wx.EVT_MENU, self.onCtrlC, id=cid)
         self.Bind(wx.EVT_MENU, self.onLeft, id=lid)
         self.Bind(wx.EVT_MENU, self.onRight, id=rid)
-        self.accel_tbl = wx.AcceleratorTable([ 
-                (wx.ACCEL_CTRL, ord('C'), cid), 
-                (wx.ACCEL_NORMAL, wx.WXK_LEFT, lid), 
-                (wx.ACCEL_NORMAL, wx.WXK_RIGHT, rid), 
-                ])
+        self.accel_tbl = wx.AcceleratorTable([
+            (wx.ACCEL_CTRL, ord('C'), cid),
+            (wx.ACCEL_NORMAL, wx.WXK_LEFT, lid),
+            (wx.ACCEL_NORMAL, wx.WXK_RIGHT, rid),
+        ])
         self.SetAcceleratorTable(self.accel_tbl)
 
         # Handle events for mouse clicks
         self.Bind(wx.EVT_LEFT_DOWN, self.onLeft)
         self.Bind(wx.EVT_RIGHT_DOWN, self.onRight)
-        
+
         # Connection
         self.connection = None
 
         # Sensors 
         self.istart = 0
         self.sensors = []
-        
+
         # Port 
         self.port = None
 
@@ -163,13 +166,12 @@ class OBDPanelGauges(wx.Panel):
         self.boxes = []
         self.texts = []
 
-
     def setConnection(self, connection):
         self.connection = connection
-    
+
     def setSensors(self, sensors):
         self.sensors = sensors
-        
+
     def setPort(self, port):
         self.port = port
 
@@ -178,7 +180,7 @@ class OBDPanelGauges(wx.Panel):
         Get at most 6 sensors to be display on screen.
         """
         sensors_display = []
-        if istart<len(self.sensors):
+        if istart < len(self.sensors):
             iend = istart + 6
             sensors_display = self.sensors[istart:iend]
         return sensors_display
@@ -187,7 +189,7 @@ class OBDPanelGauges(wx.Panel):
         """
         Display the sensors.
         """
-        
+
         sensors = self.getSensorsToDisplay(self.istart)
 
         # Destroy previous widgets
@@ -206,7 +208,7 @@ class OBDPanelGauges(wx.Panel):
 
         # Create a box for each sensor
         for index, sensor in sensors:
-            
+
             (name, value, unit) = self.port.sensor(index)
 
             box = OBDStaticBox(self, wx.ID_ANY)
@@ -214,8 +216,8 @@ class OBDPanelGauges(wx.Panel):
             boxSizer = wx.StaticBoxSizer(box, wx.VERTICAL)
 
             # Text for sensor value 
-            if type(value)==float:  
-                value = str("%.2f"%round(value, 3))                    
+            if type(value) == float:
+                value = str("%.2f" % round(value, 3))
             t1 = wx.StaticText(parent=self, label=str(value), style=wx.ALIGN_CENTER)
             t1.SetForegroundColour('WHITE')
             font1 = wx.Font(32, wx.ROMAN, wx.NORMAL, wx.NORMAL, faceName="Monaco")
@@ -225,7 +227,7 @@ class OBDPanelGauges(wx.Panel):
             self.texts.append(t1)
 
             # Text for sensor name
-            t2 = wx.StaticText(parent=self, label=unit+"\n"+name, style=wx.ALIGN_CENTER)
+            t2 = wx.StaticText(parent=self, label=unit + "\n" + name, style=wx.ALIGN_CENTER)
             t2.SetForegroundColour('WHITE')
             font2 = wx.Font(13, wx.ROMAN, wx.NORMAL, wx.BOLD, faceName="Monaco")
             t2.SetFont(font2)
@@ -235,40 +237,38 @@ class OBDPanelGauges(wx.Panel):
 
         # Add invisible boxes if necessary
         nsensors = len(sensors)
-        for i in range(6-nsensors):
+        for i in range(6 - nsensors):
             box = OBDStaticBox(self)
             boxSizer = wx.StaticBoxSizer(box, wx.VERTICAL)
             self.boxes.append(box)
             box.Show(False)
             gridSizer.Add(boxSizer, 1, wx.EXPAND | wx.ALL)
-           
+
         # Layout
         boxSizerMain.Add(gridSizer, 1, wx.EXPAND | wx.ALL, 10)
         self.SetSizer(boxSizerMain)
         self.Refresh()
-        self.Layout() 
+        self.Layout()
 
         # Timer for update
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.refresh, self.timer)
         self.timer.Start(2000)
 
-
     def refresh(self, event):
-        sensors = self.getSensorsToDisplay(self.istart)   
-        
+        sensors = self.getSensorsToDisplay(self.istart)
+
         itext = 0
         for index, sensor in sensors:
 
             (name, value, unit) = self.port.sensor(index)
-            if type(value)==float:  
-                value = str("%.2f"%round(value, 3))                    
+            if type(value) == float:
+                value = str("%.2f" % round(value, 3))
 
-            if itext<len(self.texts):
-                self.texts[itext*2].SetLabel(str(value))
-            
+            if itext < len(self.texts):
+                self.texts[itext * 2].SetLabel(str(value))
+
             itext += 1
-
 
     def onCtrlC(self, event):
         self.GetParent().Close()
@@ -277,8 +277,8 @@ class OBDPanelGauges(wx.Panel):
         """
         Get data from 6 previous sensors in the list.
         """
-        istart = self.istart-6 
-        if istart<0: istart = 0
+        istart = self.istart - 6
+        if istart < 0: istart = 0
         self.istart = istart
         self.ShowSensors()
 
@@ -286,18 +286,19 @@ class OBDPanelGauges(wx.Panel):
         """
         Get data from 6 next sensors in the list.
         """
-        istart = self.istart+6
-        if istart<len(self.sensors):
+        istart = self.istart + 6
+        if istart < len(self.sensors):
             self.istart = istart
             self.ShowSensors()
 
-    def OnPaint(self, event): 
-        self.Paint(wx.PaintDC(self)) 
+    def OnPaint(self, event):
+        self.Paint(wx.PaintDC(self))
 
-    def Paint(self, dc): 
-        dc.DrawBitmap(self.bitmap, 0, 0)     
+    def Paint(self, dc):
+        dc.DrawBitmap(self.bitmap, 0, 0)
 
-#-------------------------------------------------------------------------------
+        # -------------------------------------------------------------------------------
+
 
 class OBDLoadingPanel(wx.Panel):
     """
@@ -305,7 +306,7 @@ class OBDLoadingPanel(wx.Panel):
 
     Show loading screen. Handle event from mouse/keyboard.
     """
-    
+
     def __init__(self, *args, **kwargs):
         """
         Constructor.
@@ -313,27 +314,27 @@ class OBDLoadingPanel(wx.Panel):
         super(OBDLoadingPanel, self).__init__(*args, **kwargs)
 
         # Background image
-        image = wx.Image(BACKGROUND_FILENAME) 
-        width, height = wx.GetDisplaySize() 
+        image = wx.Image(BACKGROUND_FILENAME)
+        width, height = wx.GetDisplaySize()
         image = image.Scale(width, height, wx.IMAGE_QUALITY_HIGH)
-        self.bitmap = wx.BitmapFromImage(image) 
+        self.bitmap = wx.BitmapFromImage(image)
         self.Bind(wx.EVT_PAINT, self.OnPaint)
 
         # Logo
         bitmap = wx.Bitmap(LOGO_FILENAME)
         width, height = bitmap.GetSize()
         image = wx.ImageFromBitmap(bitmap)
-        image = image.Scale(width/6, height/6, wx.IMAGE_QUALITY_HIGH)
+        image = image.Scale(width / 6, height / 6, wx.IMAGE_QUALITY_HIGH)
         bitmap = wx.BitmapFromImage(image)
         control = wx.StaticBitmap(self, wx.ID_ANY, bitmap)
-        control.SetPosition((10, 10)) 
+        control.SetPosition((10, 10))
 
         # Create an accelerator table
         cid = wx.NewId()
         self.Bind(wx.EVT_MENU, self.onCtrlC, id=cid)
-        self.accel_tbl = wx.AcceleratorTable([ 
-                (wx.ACCEL_CTRL, ord('C'), cid), 
-                ])
+        self.accel_tbl = wx.AcceleratorTable([
+            (wx.ACCEL_CTRL, ord('C'), cid),
+        ])
         self.SetAcceleratorTable(self.accel_tbl)
 
         # Connection
@@ -358,13 +359,12 @@ class OBDLoadingPanel(wx.Panel):
         self.SetSizer(boxSizer)
         font3 = wx.Font(16, wx.ROMAN, wx.NORMAL, wx.NORMAL, faceName="Monaco")
         self.textCtrl.SetFont(font3)
-        self.textCtrl.AddText(" Opening interface (serial port)\n")     
+        self.textCtrl.AddText(" Opening interface (serial port)\n")
         self.textCtrl.AddText(" Trying to connect...\n")
-        
+
         self.timer0 = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.connect, self.timer0)
         self.timer0.Start(1000)
-
 
     def connect(self, event):
         if self.timer0:
@@ -378,7 +378,7 @@ class OBDLoadingPanel(wx.Panel):
             connected = self.c.is_connected()
             self.textCtrl.Clear()
             self.textCtrl.AddText(" Trying to connect ..." + time.asctime())
-            if connected: 
+            if connected:
                 break
 
         if not connected:
@@ -386,10 +386,10 @@ class OBDLoadingPanel(wx.Panel):
             return False
         else:
             self.textCtrl.Clear()
-            #self.textCtrl.AddText(" Connected\n")
+            # self.textCtrl.AddText(" Connected\n")
             port_name = self.c.get_port_name()
             if port_name:
-                self.textCtrl.AddText(" Failed Connection: " + port_name +"\n")
+                self.textCtrl.AddText(" Failed Connection: " + port_name + "\n")
                 self.textCtrl.AddText(" Please hold alt & esc to view terminal.")
             self.textCtrl.AddText(str(self.c.get_output()))
             self.sensors = self.c.get_sensors()
@@ -397,23 +397,23 @@ class OBDLoadingPanel(wx.Panel):
 
             self.GetParent().update(None)
 
-
     def getSensors(self):
         return self.sensors
-    
+
     def getPort(self):
         return self.port
 
     def onCtrlC(self, event):
         self.GetParent().Close()
 
-    def OnPaint(self, event): 
-        self.Paint(wx.PaintDC(self)) 
+    def OnPaint(self, event):
+        self.Paint(wx.PaintDC(self))
 
-    def Paint(self, dc): 
-        dc.DrawBitmap(self.bitmap, 0, 0)     
-        
-#-------------------------------------------------------------------------------
+    def Paint(self, dc):
+        dc.DrawBitmap(self.bitmap, 0, 0)
+
+        # -------------------------------------------------------------------------------
+
 
 class OBDFrame(wx.Frame):
     """
@@ -426,10 +426,10 @@ class OBDFrame(wx.Frame):
         """
         wx.Frame.__init__(self, None, wx.ID_ANY, "OBD-Pi")
 
-        image = wx.Image(BACKGROUND_FILENAME) 
-        width, height = wx.GetDisplaySize() 
+        image = wx.Image(BACKGROUND_FILENAME)
+        width, height = wx.GetDisplaySize()
         image = image.Scale(width, height, wx.IMAGE_QUALITY_HIGH)
-        self.bitmap = wx.BitmapFromImage(image) 
+        self.bitmap = wx.BitmapFromImage(image)
         self.Bind(wx.EVT_PAINT, self.OnPaint)
 
         self.panelLoading = OBDLoadingPanel(self)
@@ -440,7 +440,6 @@ class OBDFrame(wx.Frame):
         self.panelLoading.showLoadingScreen()
         self.panelLoading.SetFocus()
 
-        
     def update(self, event):
         if self.panelLoading:
             connection = self.panelLoading.getConnection()
@@ -448,7 +447,7 @@ class OBDFrame(wx.Frame):
             port = self.panelLoading.getPort()
             self.panelLoading.Destroy()
         self.panelGauges = OBDPanelGauges(self)
-        
+
         if connection:
             self.panelGauges.setConnection(connection)
 
@@ -462,13 +461,14 @@ class OBDFrame(wx.Frame):
         self.panelGauges.SetFocus()
         self.Layout()
 
-    def OnPaint(self, event): 
-        self.Paint(wx.PaintDC(self)) 
+    def OnPaint(self, event):
+        self.Paint(wx.PaintDC(self))
 
-    def Paint(self, dc): 
-        dc.DrawBitmap(self.bitmap, 0, 0)     
-        
-#-------------------------------------------------------------------------------
+    def Paint(self, dc):
+        dc.DrawBitmap(self.bitmap, 0, 0)
+
+        # -------------------------------------------------------------------------------
+
 
 class OBDFrame0(wx.Frame):
     """
@@ -481,19 +481,20 @@ class OBDFrame0(wx.Frame):
         """
         wx.Frame.__init__(self, None, wx.ID_ANY, "")
 
-        image = wx.Image(BACKGROUND_FILENAME) 
-        width, height = wx.GetDisplaySize() 
+        image = wx.Image(BACKGROUND_FILENAME)
+        width, height = wx.GetDisplaySize()
         image = image.Scale(width, height, wx.IMAGE_QUALITY_HIGH)
-        self.bitmap = wx.BitmapFromImage(image) 
+        self.bitmap = wx.BitmapFromImage(image)
         self.Bind(wx.EVT_PAINT, self.OnPaint)
 
-    def OnPaint(self, event): 
-        self.Paint(wx.PaintDC(self)) 
+    def OnPaint(self, event):
+        self.Paint(wx.PaintDC(self))
 
-    def Paint(self, dc): 
-        dc.DrawBitmap(self.bitmap, 0, 0)     
+    def Paint(self, dc):
+        dc.DrawBitmap(self.bitmap, 0, 0)
 
-#-------------------------------------------------------------------------------
+        # -------------------------------------------------------------------------------
+
 
 class OBDSplashScreen(wx.SplashScreen):
     """
@@ -507,10 +508,10 @@ class OBDSplashScreen(wx.SplashScreen):
         self.frame0 = frame0
 
         image = wx.Image(SPLASHSCREEN_FILENAME)
-        width, height = wx.GetDisplaySize() 
+        width, height = wx.GetDisplaySize()
         image = image.Scale(width, height, wx.IMAGE_QUALITY_HIGH)
-        bitmap = wx.BitmapFromImage(image) 
-        
+        bitmap = wx.BitmapFromImage(image)
+
         splashStyle = wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_TIMEOUT
         splashDuration = SPLASHSCREEN_TIMEOUT
         wx.SplashScreen.__init__(self, bitmap, splashStyle, splashDuration, parent)
@@ -522,7 +523,7 @@ class OBDSplashScreen(wx.SplashScreen):
         """
         Exit splash screen and pass over other to main OBD frame.
         """
-        
+
         # Main frame                                           
         frame = OBDFrame()
         app.SetTopWindow(frame)
@@ -532,11 +533,12 @@ class OBDSplashScreen(wx.SplashScreen):
         # Delete frame0
         if self.frame0:
             self.frame0.Destroy()
-            del self.frame0 
-        
-        evt.Skip()          
+            del self.frame0
 
-#-------------------------------------------------------------------------------
+        evt.Skip()
+
+        # -------------------------------------------------------------------------------
+
 
 class OBDApp(wx.App):
     """
@@ -558,22 +560,22 @@ class OBDApp(wx.App):
         self.SetTopWindow(frame)
         frame.ShowFullScreen(True)
         frame.Show(True)
-        #frame.showLoadingPanel()
+        # frame.showLoadingPanel()
 
         # This frame is used only to set the full screen mode  
         # for the splash screen display and for transition with 
         # the loading screen.
         # This frame is not shown and will be deleted later on.
-        #frame0 = OBDFrame0()
-        #self.SetTopWindow(frame0)
-        #frame0.ShowFullScreen(True)
-        #self.SetTopWindow(frame0)
+        # frame0 = OBDFrame0()
+        # self.SetTopWindow(frame0)
+        # frame0.ShowFullScreen(True)
+        # self.SetTopWindow(frame0)
 
         # Splash screen
-        #splash = OBDSplashScreen(frame0, frame0)
-        #self.SetTopWindow(splash)
-        #splash.Show(True)
-        #splash.ShowFullScreen(True)
+        # splash = OBDSplashScreen(frame0, frame0)
+        # self.SetTopWindow(splash)
+        # splash.Show(True)
+        # splash.ShowFullScreen(True)
 
         return True
 
@@ -581,10 +583,10 @@ class OBDApp(wx.App):
         if event.GetEventType == wx.KeyEvent:
             pass
 
-#-------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------
 
 app = OBDApp(False)
 app.MainLoop()
 
-#-------------------------------------------------------------------------------
-
+# -------------------------------------------------------------------------------
