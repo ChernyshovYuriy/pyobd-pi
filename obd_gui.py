@@ -135,7 +135,7 @@ class OBDPanelGauges(wx.Panel):
         image = wx.Image(BACKGROUND_FILENAME)
         width, height = wx.GetDisplaySize()
         image = image.Scale(width, height, wx.IMAGE_QUALITY_HIGH)
-        self.bitmap = wx.BitmapFromImage(image)
+        self.bitmap = wx.Bitmap(image)
         self.Bind(wx.EVT_PAINT, self.OnPaint)
 
         # Create an accelerator table
@@ -492,7 +492,7 @@ class OBDFrame0(wx.Frame):
         image = wx.Image(BACKGROUND_FILENAME)
         width, height = wx.GetDisplaySize()
         image = image.Scale(width, height, wx.IMAGE_QUALITY_HIGH)
-        self.bitmap = wx.BitmapFromImage(image)
+        self.bitmap = wx.Bitmap(image)
         self.Bind(wx.EVT_PAINT, self.OnPaint)
 
     def OnPaint(self, event):
@@ -589,9 +589,9 @@ class OBDApp(wx.App):
 
         return True
 
-    def FilterEvent(self, event):
-        if event.GetEventType == wx.KeyEvent:
-            pass
+    # def FilterEvent(self, event):
+    #     if event.GetEventType == wx.KeyEvent:
+    #         pass
 
 
 # -------------------------------------------------------------------------------
