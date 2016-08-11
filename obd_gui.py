@@ -11,6 +11,7 @@ import time
 from threading import Thread
 
 import wx
+import wx.adv
 
 from obd_capture import OBD_Capture
 
@@ -33,6 +34,7 @@ class OBDConnection(object):
     """
 
     def __init__(self):
+        print("Class " + type(self).__name__)
         self.c = OBD_Capture()
 
     def get_capture(self):
@@ -81,6 +83,7 @@ class OBDText(wx.TextCtrl):
         """
         Constructor.
         """
+        print("Class " + type(self).__name__)
         style = wx.TE_READONLY | wx.TE_MULTILINE
         wx.TextCtrl.__init__(self, parent, style=style)
 
@@ -105,6 +108,7 @@ class OBDStaticBox(wx.StaticBox):
         """
         Constructor.
         """
+        print("Class " + type(self).__name__)
         wx.StaticBox.__init__(self, *args, **kwargs)
 
     def OnPaint(self, event):
@@ -126,7 +130,7 @@ class OBDPanelGauges(wx.Panel):
         Constructor.
         """
         super(OBDPanelGauges, self).__init__(*args, **kwargs)
-
+        print("Class " + type(self).__name__)
         # Background image
         image = wx.Image(BACKGROUND_FILENAME)
         width, height = wx.GetDisplaySize()
@@ -311,21 +315,23 @@ class OBDLoadingPanel(wx.Panel):
         """
         Constructor.
         """
+        print("Class " + type(self).__name__)
+
         super(OBDLoadingPanel, self).__init__(*args, **kwargs)
 
         # Background image
         image = wx.Image(BACKGROUND_FILENAME)
         width, height = wx.GetDisplaySize()
         image = image.Scale(width, height, wx.IMAGE_QUALITY_HIGH)
-        self.bitmap = wx.BitmapFromImage(image)
+        self.bitmap = wx.Bitmap(image)
         self.Bind(wx.EVT_PAINT, self.OnPaint)
 
         # Logo
         bitmap = wx.Bitmap(LOGO_FILENAME)
         width, height = bitmap.GetSize()
-        image = wx.ImageFromBitmap(bitmap)
+        image = bitmap.ConvertToImage()
         image = image.Scale(width / 6, height / 6, wx.IMAGE_QUALITY_HIGH)
-        bitmap = wx.BitmapFromImage(image)
+        bitmap = wx.Bitmap(image)
         control = wx.StaticBitmap(self, wx.ID_ANY, bitmap)
         control.SetPosition((10, 10))
 
@@ -424,12 +430,13 @@ class OBDFrame(wx.Frame):
         """
         Constructor.
         """
+        print("Class " + type(self).__name__)
         wx.Frame.__init__(self, None, wx.ID_ANY, "OBD-Pi")
 
         image = wx.Image(BACKGROUND_FILENAME)
         width, height = wx.GetDisplaySize()
         image = image.Scale(width, height, wx.IMAGE_QUALITY_HIGH)
-        self.bitmap = wx.BitmapFromImage(image)
+        self.bitmap = wx.Bitmap(image)
         self.Bind(wx.EVT_PAINT, self.OnPaint)
 
         self.panelLoading = OBDLoadingPanel(self)
@@ -479,6 +486,7 @@ class OBDFrame0(wx.Frame):
         """
         Constructor.
         """
+        print("Class " + type(self).__name__)
         wx.Frame.__init__(self, None, wx.ID_ANY, "")
 
         image = wx.Image(BACKGROUND_FILENAME)
@@ -496,7 +504,7 @@ class OBDFrame0(wx.Frame):
         # -------------------------------------------------------------------------------
 
 
-class OBDSplashScreen():
+class OBDSplashScreen(wx.adv.SplashScreen):
     """
     Splash screen.
     """
@@ -505,6 +513,7 @@ class OBDSplashScreen():
         """
         Constructor.
         """
+        print("Class " + type(self).__name__)
         self.frame0 = frame0
 
         image = wx.Image(SPLASHSCREEN_FILENAME)
@@ -512,9 +521,9 @@ class OBDSplashScreen():
         image = image.Scale(width, height, wx.IMAGE_QUALITY_HIGH)
         bitmap = wx.BitmapFromImage(image)
 
-        splashStyle = wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_TIMEOUT
+        splashStyle = wx.adv.SPLASH_CENTRE_ON_SCREEN | wx.adv.SPLASH_TIMEOUT
         splashDuration = SPLASHSCREEN_TIMEOUT
-        wx.SplashScreen.__init__(self, bitmap, splashStyle, splashDuration, parent)
+        wx.adv.SplashScreen.__init__(self, bitmap, splashStyle, splashDuration, parent)
 
         self.Bind(wx.EVT_CLOSE, self.OnExit)
         wx.Yield()
@@ -549,6 +558,7 @@ class OBDApp(wx.App):
         """
         Constructor.
         """
+        print("Class " + type(self).__name__)
         wx.App.__init__(self, redirect, filename, useBestVisual, clearSigInt)
 
     def OnInit(self):
